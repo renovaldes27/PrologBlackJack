@@ -35,7 +35,15 @@ hit_stand :- printPlayerCards,nl,
               end_round.
 
 
-end_round :- write('player lost'),nl.
+end_round :- write('Round over'), nl. % place holder for actual end_round predicate
+
+
+playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
+              sum_list(L1, PlayerSum),
+              findall(V2, dealerCard(_,_,V2,_), L2),
+              sum_list(L2,DealerSum), 
+              PlayerSum > DealerSum,
+              PlayerSum < 22. 
 
 printPlayerCards :- write('Current Cards:'),nl,nl,
                     playerCard(R,S,_,_),
