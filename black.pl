@@ -22,3 +22,23 @@ dealCards :- dealPlayerCard, dealDealerCard.
 
 clearCards :- retract(playerCard(_,_,_,_)), retract(dealerCard(_,_,_,_)),fail.
 clearCards.
+
+
+playRound :- dealCards, findall(V, playerCard(_,_,V,_), L),
+                       sum_list(L,HandSum),
+                       (HandSum < 22) -> hit_stand;
+                       end_round. 
+
+hit_stand :- printPlayerCards,nl,
+              write('hit or stand?'),nl,
+              readsentence(R), R = [h,i,t] -> playRound;
+              end_round.
+
+
+end_round :- write('player lost'),nl.
+
+printPlayerCards :- write('Current Cards:'),nl,nl,
+                    playerCard(R,S,_,_),
+                    write('  '), write(R), write(' of '), write(S),nl,
+                    fail.
+printPlayerCards.

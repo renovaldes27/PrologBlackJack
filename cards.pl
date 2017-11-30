@@ -10,7 +10,7 @@ card(ten,club,10,9).
 card(jack,club,10,10).
 card(queen,club,10,11).
 card(king,club,10,12).
-card(ace,club,10,13). 
+card(ace,club,11,13). 
 
 card(two,heart,2,14).
 card(three,heart,3,15).
@@ -24,7 +24,7 @@ card(ten,heart,10,22).
 card(jack,heart,10,23).
 card(queen,heart,10,24).
 card(king,heart,10,25).
-card(ace,heart,10,26).
+card(ace,heart,11,26).
 
 card(two,diamond,2,27).
 card(three,diamond,3,28).
@@ -38,7 +38,7 @@ card(ten,diamond,10,35).
 card(jack,diamond,10,36).
 card(queen,diamond,10,37).
 card(king,diamond,10,38).
-card(ace,diamond,10,39).
+card(ace,diamond,11,39).
 
 card(two,spade,2,40).
 card(three,spade,3,41).
@@ -52,15 +52,4 @@ card(ten,spade,10,48).
 card(jack,spade,10,49).
 card(queen,spade,10,50).
 card(king,spade,10,51).
-card(ace,spade,10,52).
-
-
-
-%getCard :- random(1,53,Random), card(R,V,Random), write(R), nl, write(V).
-
-
-
-
-
-
-
+card(ace,spade,11,52).
