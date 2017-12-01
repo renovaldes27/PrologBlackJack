@@ -24,6 +24,8 @@ clearCards :- retract(playerCard(_,_,_,_)), retract(dealerCard(_,_,_,_)),fail.
 clearCards.
 
 
+oneGame :- clearCards, playRound.
+
 playRound :- dealCards, findall(V, playerCard(_,_,V,_), L),
                        sum_list(L,HandSum),
                        (HandSum < 22) -> hit_stand;
@@ -31,11 +33,16 @@ playRound :- dealCards, findall(V, playerCard(_,_,V,_), L),
 
 hit_stand :- printPlayerCards,nl,
               write('hit or stand?'),nl,
-              readsentence(R), R = [h,i,t] -> playRound;
+              readsentence(R1),!,
+              cleanLine(R1,R),
+              R = [h,i,t] -> playRound;
               end_round.
 
+cleanLine([F|L],R) :- F = [10] -> R = L;
+                         R = [F|L].
 
-end_round :- write('Round over'), nl. % place holder for actual end_round predicate
+end_round :- playerWins -> write('user won!');
+                           write('user lost'). % place holder for actual end_round predicate
 
 
 playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
@@ -43,7 +50,7 @@ playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
               findall(V2, dealerCard(_,_,V2,_), L2),
               sum_list(L2,DealerSum), 
               PlayerSum > DealerSum,
-              PlayerSum < 22. 
+              PlayerSum < 22,printPlayerCards. 
 
 printPlayerCards :- write('Current Cards:'),nl,nl,
                     playerCard(R,S,_,_),
