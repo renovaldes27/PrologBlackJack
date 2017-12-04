@@ -1,17 +1,21 @@
 :-  dynamic playerCard/4.
 :-  dynamic dealerCard/4.
 :-  dynamic cash/1.
+:-  dynamic initialCash/1.
 
 getCard(R,S,V,Random) :- random(1,53,Random), card(R,S,V,Random). 
-
-
 
 intro :- write('Welcome to black jack!'),nl, 
          write('Play as long as you\'d like or until out of money.'),nl,
          write('How much money would you like to start with? '),nl.
                         
-dealPlayerCard :- getCard(R,S,V,Random), not(playerCard(_,_,_,Random)) -> assertz(playerCard(R,S,V,Random)) ; dealPlayerCard.
-dealDealerCard :- getCard(R,S,V,Random), not(dealerCard(_,_,_,Random)) -> assertz(dealerCard(R,S,V,Random)) ; dealDealerCard.
+dealPlayerCard :- getCard(R,S,V,Random), 
+                  not(playerCard(_,_,_,Random)) -> assertz(playerCard(R,S,V,Random)) ; 
+                  dealPlayerCard.
+
+dealDealerCard :- getCard(R,S,V,Random), 
+                  not(dealerCard(_,_,_,Random)) -> assertz(dealerCard(R,S,V,Random)) ; 
+                  dealDealerCard.
 
 dealCards :- dealPlayerCard, dealDealerCard.
 
@@ -38,7 +42,7 @@ cleanLine([F|L],R) :- F = [10] -> R = L;
 end_round :- write('======================'),nl,
              once(playerWins; playerLoses),
              write('======================'),nl,nl,
-             play_again.
+             once(outOfCash ; play_again).
 
 play_again :- write('Would you like to play another round?'),nl,
               write('yes or no?'),nl,
@@ -46,15 +50,26 @@ play_again :- write('Would you like to play another round?'),nl,
               cleanLine(R1,R),
               answer(R).
               
+outOfCash :- cash(0), retract(cash(0)),
+             write('You\'re all out of cash.'),nl,
+             write('Better luck next time.'), nl.
 
 answer([y,e,s]) :- oneGame, !.
-answer([n,o]) :- write('you said not to play again').
+answer([n,o]) :- write('Thank you for playing blackjack!'),nl,
+                 gameResults.
+
+
+gameResults :- write('======================'),nl,
+               write('Final Results:'),nl,nl,
+               write('Started with $'), initialCash(Ic), write(Ic),nl,nl,
+               write('Finished with $'), cash(C), write(C),nl,
+               write('======================'),nl.
 
 playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
               sum_list(L1, PlayerSum),
               findall(V2, dealerCard(_,_,V2,_), L2),
               sum_list(L2,DealerSum), 
-              once(PlayerSum > DealerSum ; 21 is PlayerSum),
+              once(DealerSum > 21 ; 21 is PlayerSum ; PlayerSum > DealerSum),
               PlayerSum < 22,
               write('You Won!'),nl,
               printPlayerCards,nl,
@@ -89,7 +104,7 @@ printDealerCards.
 getStartingCash :- readsentence(R),!, 
                    atomic_list_concat(R,S), 
                    atom_number(S,N), 
-                   number(N), asserta(cash(N)).
+                   number(N), asserta(initialCash(N)), asserta(cash(N)).
 
 blackjack :- intro, 
              getStartingCash,
