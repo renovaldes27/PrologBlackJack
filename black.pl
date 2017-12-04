@@ -22,7 +22,17 @@ dealCards :- dealPlayerCard, dealDealerCard.
 clearCards :- retract(playerCard(_,_,_,_)), retract(dealerCard(_,_,_,_)),fail.
 clearCards.
 
-oneGame :- clearCards, playRound.
+oneGame :- clearCards, bet, playRound.
+
+bet :- write('How much would you like to bet?'),nl,
+       getBet,nl.
+       
+getBet :- readsentence(R1),!, cleanLine(R1,R),
+          atomic_list_concat(R,S),
+          atom_number(S,N),
+          number(N), cash(C),
+          N =< C -> asserta(bet(N)) ; 
+          bet.
 
 playRound :- dealCards, findall(V, playerCard(_,_,V,_), L),
                        sum_list(L,HandSum),
@@ -46,13 +56,13 @@ end_round :- write('======================'),nl,
 
 play_again :- write('Would you like to play another round?'),nl,
               write('yes or no?'),nl,
-              readsentence(R1),!,
+              readsentence(R1),!,nl,
               cleanLine(R1,R),
               answer(R).
               
-outOfCash :- cash(0), retract(cash(0)),
+outOfCash :- cash(0),
              write('You\'re all out of cash.'),nl,
-             write('Better luck next time.'), nl.
+             gameResults, nl.
 
 answer([y,e,s]) :- oneGame, !.
 answer([n,o]) :- write('Thank you for playing blackjack!'),nl,
@@ -61,9 +71,17 @@ answer([n,o]) :- write('Thank you for playing blackjack!'),nl,
 
 gameResults :- write('======================'),nl,
                write('Final Results:'),nl,nl,
-               write('Started with $'), initialCash(Ic), write(Ic),nl,nl,
-               write('Finished with $'), cash(C), write(C),nl,
-               write('======================'),nl.
+               write('  Started with $'), initialCash(Ic), write(Ic),nl,nl,
+               write('  Finished with $'), cash(C), write(C),nl,
+               write('======================'),nl,
+               endMessage(Ic,C),
+               retract(cash(_)), retract(initialCash(_)).
+
+
+endMessage(Initial,End) :- Initial >= End -> 
+                           write('Better luck next time...') ; 
+                           write('It\'s your lucky day!'),
+                           nl.
 
 playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
               sum_list(L1, PlayerSum),
@@ -71,18 +89,20 @@ playerWins :- findall(V1, playerCard(_,_,V1,_), L1),
               sum_list(L2,DealerSum), 
               once(DealerSum > 21 ; 21 is PlayerSum ; PlayerSum > DealerSum),
               PlayerSum < 22,
-              write('You Won!'),nl,
+              write('You Won!'),nl,nl,
               printPlayerCards,nl,
               printDealerCards,nl,
               cash(C), retract(cash(_)),
-              C2 is C + 2, asserta(cash(C2)),
+              bet(B), retract(bet(_)),
+              C2 is C + B, asserta(cash(C2)),
               write('Cash: $'), write(C2),nl.
 
-playerLoses :- write('You Lost.'), nl,
+playerLoses :- write('You Lost.'), nl,nl,
                printPlayerCards, nl,
                printDealerCards, nl,
                cash(C), retract(cash(_)),
-               C2 is C - 2, asserta(cash(C2)),
+               bet(B), retract(bet(_)),
+               C2 is C - B, asserta(cash(C2)),
                write('Cash: $'), write(C2),nl.
 
 printPlayerCards :- write('Your Cards:'),nl,nl,
@@ -98,15 +118,12 @@ printDealerCards :- write('Dealer Cards:'),nl,nl,
                      fail.
 printDealerCards.
 
-%blackjack :-  retract(cash(_)), asserta(cash(10)), oneGame,!.
-%blackjack :-  asserta(cash(10)), oneGame.
-
 getStartingCash :- readsentence(R),!, 
                    atomic_list_concat(R,S), 
                    atom_number(S,N), 
                    number(N), asserta(initialCash(N)), asserta(cash(N)).
 
 blackjack :- intro, 
-             getStartingCash,
+             getStartingCash,nl,
              oneGame.
 
